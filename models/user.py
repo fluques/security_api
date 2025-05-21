@@ -8,7 +8,7 @@ class UserModel(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_name = db.Column(db.String(20), unique=True, nullable=False)
     email=db.Column(db.String(50),unique=True,nullable=False)
-    password = db.Column(db.String(50), nullable=False)
+    password = db.Column(db.String(150), nullable=False)
     is_active = db.Column(db.Boolean(), default=True)
     groups = db.relationship("GroupModel", back_populates="users", secondary="groups_users")
 

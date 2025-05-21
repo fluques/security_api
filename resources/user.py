@@ -96,7 +96,7 @@ class UserList(MethodView):
             user.password=pbkdf2_sha256.hash(user_data["password"])
             db.session.add(user)
             db.session.commit()
-        except SQLAlchemyError:
+        except SQLAlchemyError as ex:
             abort(500,message="An error occurred while inserting the user.")
 
         return user

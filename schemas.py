@@ -34,3 +34,13 @@ class UsersAndGroupsSchema(Schema):
     id = fields.Int()
     user = fields.Nested(UserSchema)
     group = fields.Nested(GroupSchema)
+
+class ActionSchema(Schema):
+    id = fields.Int()
+    name = fields.Str(required=True)
+
+
+class ResourceSchema(Schema):
+    id = fields.Int()
+    name = fields.Str(required=True)
+

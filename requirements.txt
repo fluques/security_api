@@ -1,0 +1,13 @@
+sqlalchemy
+requests 
+flask 
+python-dotenv 
+flask-login
+flask-sqlalchemy
+flask-bcrypt 
+flask-smorest 
+marshmallow 
+flask-jwt-extended 
+passlib 
+flask-migrate 
+psycopg2

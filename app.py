@@ -5,9 +5,12 @@ from blocklist import BLOCKLIST
 from db import db
 import models
 from flask_migrate import Migrate
+import os
 from resources.user import blp as UserBlueprint
 from resources.group import blp as GroupBlueprint
-import os
+from resources.action import blp as ActionBlueprint
+from resources.resource import blp as ResourceBlueprint
+
 
 
 
@@ -20,7 +23,7 @@ def create_app(db_url=None):
     app.config["OPENAPI_URL_PREFIX"] = "/"
     app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
     app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
-    app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL") or "sqlite:///data.db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL") or "postgresql://postgres:example@192.168.51.202:5432/security_db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["PROPAGATE_EXCEPTIONS"] = True
     db.init_app(app)
@@ -94,12 +97,14 @@ def create_app(db_url=None):
 
 
 
-    #@app.get("/")
+    @app.get("/")
     def HelloName():
         return "Hello World 2!"
 
     api.register_blueprint(UserBlueprint)
     api.register_blueprint(GroupBlueprint)
+    api.register_blueprint(ActionBlueprint)
+    api.register_blueprint(ResourceBlueprint)
 
     return app
 
