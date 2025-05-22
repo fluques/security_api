@@ -14,7 +14,7 @@ blp = Blueprint("Resources", __name__, description="Operations on resources")
 class Resource(MethodView):
     @blp.response(200, ResourceSchema)
     def get(cls, resource_id):
-        resource = ResourceSchema.query.get_or_404(resource_id)
+        resource = ResourceModel.query.get_or_404(resource_id)
         return resource
 
     def delete(cls, resource_id):

@@ -11,19 +11,9 @@ class UserModel(db.Model, UserMixin):
     password = db.Column(db.String(150), nullable=False)
     is_active = db.Column(db.Boolean(), default=True)
     groups = db.relationship("GroupModel", back_populates="users", secondary="groups_users")
-
-   # cart = db.Column(db.JSON, nullable=True, default=list)  # Make cart nullable
-
-    # Define the relationship between User and CartProducts
-    
-    #cart_products = relationship('CartProducts', backref="user", lazy="dynamic")
-    # Define the relationship between User and Wishlists
-    #wishlists = db.relationship('Wishlists', backref='user', lazy=True)
+    companies = db.relationship("CompanyModel", back_populates="companies", secondary="companies_users")
+    permissions = db.relationship("PermissionModel", back_populates="permissions", secondary="permissions_users")
 
     def __repr__(self):
         return f'<User {self.username}>'
     
-'''@listens_for(User.__table__, 'after_create')
-def insert_initial_values(*args, **kwargs):
-    db.session.add(User(id=1,username='admin',password="abc123",is_active=True))
-    db.session.commit()'''

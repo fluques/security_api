@@ -1,6 +1,6 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from schemas import ActionSchema
+from schemas import ActionSchema, ActionUpdateSchema
 from models import ActionModel
 from db import db
 from sqlalchemy.exc import SQLAlchemyError
@@ -23,7 +23,7 @@ class Action(MethodView):
         db.session.commit()
         return {"message": "Action deleted."}
 
-    @blp.arguments(ActionSchema)
+    @blp.arguments(ActionUpdateSchema)
     @blp.response(200, ActionSchema)
     def put(self, action_data, action_id):
         action = ActionModel.query.get(action_id)
@@ -57,4 +57,6 @@ class ActionList(MethodView):
             abort(500,message="An error occurred while inserting the action.")
 
         return action
+    
+
     

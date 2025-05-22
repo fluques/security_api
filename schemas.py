@@ -1,4 +1,29 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, ValidationError, fields
+from sqlalchemy.types import LargeBinary
+class BytesField(fields.Field):
+    def _validate(self, value):
+        if not isinstance(value, bytes):
+            raise ValidationError('Invalid input type.')
+
+        if value is None or value == b'':
+            raise ValidationError('Invalid value')
+
+
+#PLAIN SCHEMAS
+
+class PlainCompanySchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(required=True)
+    street = fields.Str(required=True)
+    zip_code = fields.Str(required=True)
+    city = fields.Str(required=True)
+    state = fields.Str(required=True)
+    country = fields.Str(required=True)
+    main_email= fields.Str(required=True)
+    emails = fields.Str(required=False)
+    phone = fields.Str(required=True)
+    celphone = fields.Str(required=False)
+    is_active=fields.Bool()
 
 
 class PlainUserSchema(Schema):
@@ -12,6 +37,29 @@ class PlainGroupSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(required=True)   
 
+
+class ApplicationSchema(Schema):
+    id = fields.Integer(dump_only=True)
+    name = fields.Str(required=True)
+
+####UPDATE SCHEMAS
+
+class CompanyUpdateSchema(Schema):
+    name = fields.Str(required=True)
+    street = fields.Str(required=True)
+    zip_code = fields.Str(required=True)
+    city = fields.Str(required=True)
+    state = fields.Str(required=True)
+    country = fields.Str(required=True)
+    main_email= fields.Str(required=True)
+    emails = fields.Str(required=False)
+    phone = fields.Str(required=True)
+    celphone = fields.Str(required=False)
+    is_active=fields.Bool()
+
+class ApplicationUpdateSchema(Schema):
+    name = fields.Str(required=True)
+
 class UserUpdateSchema(Schema):
     user_name = fields.Str()
     password = fields.Str()
@@ -21,26 +69,72 @@ class UserUpdateSchema(Schema):
 class GroupUpdateSchema(Schema):
     name = fields.Str(required=True)
 
+class SettingsUpdateSchema(Schema):
+    logo = BytesField()
+class ResourceUpdateSchema(Schema):
+    name = fields.Str(required=True)
+    uri = fields.Str(required=True)
 
-class UserSchema(PlainUserSchema):
-    groups = fields.List(fields.Nested(PlainGroupSchema()), dump_only=True)
+class ActionUpdateSchema(Schema):
+    name = fields.Str(required=True)
 
-
-class GroupSchema(PlainGroupSchema):
-    users = fields.List(fields.Nested(PlainUserSchema()), dump_only=True)
-
-
-class UsersAndGroupsSchema(Schema):
-    id = fields.Int()
-    user = fields.Nested(UserSchema)
-    group = fields.Nested(GroupSchema)
+#COMPLETE SCHEMAS
+class SettingsSchema(Schema):
+    id = fields.Int(dump_only=True)
+    logo = BytesField()
 
 class ActionSchema(Schema):
-    id = fields.Int()
+    id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
 
 
 class ResourceSchema(Schema):
-    id = fields.Int()
+    id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
+    uri = fields.Str(required=True)
+
+#NESTED SCHEMAS
+class CompanySchema(PlainCompanySchema):
+    users = fields.List(fields.Nested(PlainUserSchema()), dump_only = True)
+    settings = fields.Nested(SettingsSchema(), dump_only = True)
+
+class PermissionsAndUsersSchema(Schema):
+    id = fields.Int(dump_only=True)
+    company = fields.Nested(PlainCompanySchema)
+    resource = fields.Nested(ResourceSchema)
+    action = fields.Nested(ActionSchema)
+    application = fields.Nested(ApplicationSchema)
+    user = fields.Nested(PlainUserSchema)
+
+class PermissionsAndGroupsSchema(Schema):
+    id = fields.Int(dump_only=True)
+    company = fields.Nested(PlainCompanySchema)
+    resource = fields.Nested(ResourceSchema)
+    action = fields.Nested(ActionSchema)
+    application = fields.Nested(ApplicationSchema)
+    group = fields.Nested(PlainGroupSchema)
+
+
+class UserSchema(PlainUserSchema):
+    groups = fields.List(fields.Nested(PlainGroupSchema()), dump_only=True)
+    companies = fields.List(fields.Nested(PlainCompanySchema()), dump_only=True)
+    permissions = fields.List(fields.Nested(PermissionsAndUsersSchema()), dump_only=True)
+
+class GroupSchema(PlainGroupSchema):
+    users = fields.List(fields.Nested(PlainUserSchema()), dump_only=True)
+    permissions = fields.List(fields.Nested(PermissionsAndGroupsSchema()), dump_only=True)
+
+
+
+
+# MANY TO MANY SCHEMAS
+class CompaniesAndUsersSchema(Schema):
+    user = fields.Nested(UserSchema)
+    company = fields.Nested(CompanySchema)
+
+
+class UsersAndGroupsSchema(Schema):
+    user = fields.Nested(UserSchema)
+    group = fields.Nested(GroupSchema)
+
 

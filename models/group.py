@@ -9,14 +9,9 @@ class GroupModel(db.Model, UserMixin):
     name = db.Column(db.String(20), unique=True, nullable=False)
     is_active=db.Column(db.Boolean(),default=True)
     users = db.relationship("UserModel", back_populates="groups", secondary="groups_users")
+    permissions = db.relationship("PermissionModel", back_populates="permissions", secondary="permissions_users")
 
-   # cart = db.Column(db.JSON, nullable=True, default=list)  # Make cart nullable
 
-    # Define the relationship between User and CartProducts
-    
-    #cart_products = relationship('CartProducts', backref="user", lazy="dynamic")
-    # Define the relationship between User and Wishlists
-    #wishlists = db.relationship('Wishlists', backref='user', lazy=True)
 
     def __repr__(self):
         return f'<User {self.username}>'
