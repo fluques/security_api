@@ -10,3 +10,6 @@ class CompaniesUsers(db.Model):
     __table_args__ = (
         PrimaryKeyConstraint("group_id", "user_id"),
     )
+
+    def __repr__(self):
+        return f'<Companies users {self.id}>'

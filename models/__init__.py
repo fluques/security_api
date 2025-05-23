@@ -9,3 +9,4 @@ from models.action import ActionModel
 from models.resource import ResourceModel
 from models.permissions_users import PermissionsUsersModel
 from models.permissions_groups import PermissionsGroupsModel
+from models.companysettings import CompanySettingsModel

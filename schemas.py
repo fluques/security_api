@@ -81,7 +81,9 @@ class ActionUpdateSchema(Schema):
 #COMPLETE SCHEMAS
 class SettingsSchema(Schema):
     id = fields.Int(dump_only=True)
-    logo = BytesField()
+    smtp_server = fields.Str()
+    smtp_user = fields.Str()
+    smtp_password = fields.Str()
 
 class ActionSchema(Schema):
     id = fields.Int(dump_only=True)
@@ -123,6 +125,13 @@ class UserSchema(PlainUserSchema):
 class GroupSchema(PlainGroupSchema):
     users = fields.List(fields.Nested(PlainUserSchema()), dump_only=True)
     permissions = fields.List(fields.Nested(PermissionsAndGroupsSchema()), dump_only=True)
+
+
+class CompanySettingsSchema(Schema):
+    id = fields.Int(dump_only=True)
+    hostname = fields.Str(required=True)
+    company = fields.Nested(PlainCompanySchema())
+    logo = BytesField()
 
 
 

@@ -16,3 +16,6 @@ class PermissionsGroupsModel(db.Model, UserMixin):
     __table_args__ = (
         UniqueConstraint(company_id, resource_id, action_id, application_id, group_id),
     )
+
+    def __repr__(self):
+        return f'<Permissions groups {self.id}>'

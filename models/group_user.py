@@ -1,6 +1,7 @@
 from db import db
+from flask_login import UserMixin
 
-class GroupsUsers(db.Model):
+class GroupsUsers(db.Model, UserMixin):
     __tablename__ = "groups_users"
 
     id = db.Column(db.Integer, primary_key=True)

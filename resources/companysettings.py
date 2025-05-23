@@ -1,12 +1,12 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from schemas import SettingsSchema
-from models import SettingsModel
+from schemas import CompanySettingsSchema
+from models import CompanySettingsModel
 from db import db
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import jwt_required
 
-blp = Blueprint("Settings", __name__, description="Operations on settings")
+blp = Blueprint("CompanySettings", __name__, description="Operations on Company settings")
 
 
 @jwt_required
