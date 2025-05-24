@@ -7,9 +7,8 @@ class CompanySettingsModel(db.Model, UserMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     hostname = db.Column(db.String, unique=True, nullable=False)
-    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"))
-    logo = db.Column(BYTEA, nullable=True)
-
+    company_id = db.Column(db.Integer, db.ForeignKey('companies.id'))
+    #company = db.relationship("CompanyModel", back_populates="settings",  uselist=False)
 
     def __repr__(self):
         return f'<Company settings {self.id}>'

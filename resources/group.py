@@ -1,7 +1,7 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from schemas import GroupSchema,GroupUpdateSchema,UserSchema,UsersAndGroupsSchema
-from models import GroupModel,UserModel
+from models import GroupModel,UserModel, PermissionModel
 from db import db
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import jwt_required
@@ -91,3 +91,43 @@ class LinkUsersToGroup(MethodView):
             abort(500, message="An error occurred while removing the user.")
 
         return {"message": "User removed from group", "group": group ,"user": user}
+
+
+
+
+
+@jwt_required
+@blp.route("/group/<int:group_id>/permission/<int:permission_id>")
+class LinkGroupsToUser(MethodView):
+    @blp.response(201, GroupSchema)
+    def post(self, group_id, permission_id):
+        group = GroupModel.query.get_or_404(group_id)
+        permission = PermissionModel.query.get_or_404(permission_id)
+
+        group.permissions.append(permission)
+
+        try:
+            db.session.add(group)
+            db.session.commit()
+        except SQLAlchemyError as ex:
+            abort(500, message="An error occurred while inserting the permission.")
+
+        return group
+
+    @blp.response(200, GroupSchema)
+    def delete(self, group_id, permission_id):
+        group = GroupModel.query.get_or_404(group_id)
+        permission = PermissionModel.query.get_or_404(permission_id)
+
+        group.permissions.remove(permission)
+
+        try:
+            db.session.add(group)
+            db.session.commit()
+
+        except SQLAlchemyError as ex:
+            abort(500, message="An error occurred while removing the permission.")
+
+        return group
+
+

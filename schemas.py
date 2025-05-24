@@ -70,7 +70,10 @@ class GroupUpdateSchema(Schema):
     name = fields.Str(required=True)
 
 class SettingsUpdateSchema(Schema):
-    logo = BytesField()
+    smtp_server = fields.Str()
+    smtp_user = fields.Str()
+    smtp_password = fields.Str()
+
 class ResourceUpdateSchema(Schema):
     name = fields.Str(required=True)
     uri = fields.Str(required=True)
@@ -96,44 +99,60 @@ class ResourceSchema(Schema):
     uri = fields.Str(required=True)
 
 #NESTED SCHEMAS
-class CompanySchema(PlainCompanySchema):
-    users = fields.List(fields.Nested(PlainUserSchema()), dump_only = True)
-    settings = fields.Nested(SettingsSchema(), dump_only = True)
 
-class PermissionsAndUsersSchema(Schema):
+class PlainPermissionsSchema(Schema):
+    id = fields.Int(dump_only=True)
+    company_id= fields.Int()
+    application_id= fields.Int()
+    resource_id= fields.Int()
+    action_id= fields.Int()
+
+class PermissionsSchema(PlainPermissionsSchema):
     id = fields.Int(dump_only=True)
     company = fields.Nested(PlainCompanySchema)
     resource = fields.Nested(ResourceSchema)
     action = fields.Nested(ActionSchema)
     application = fields.Nested(ApplicationSchema)
+
+class PermissionsUpdateSchema(PlainPermissionsSchema):
+    id = fields.Int(dump_only=True)
+    company = fields.Nested(PlainCompanySchema)
+    resource = fields.Nested(ResourceSchema)
+    action = fields.Nested(ActionSchema)
+    application = fields.Nested(ApplicationSchema)
+
+
+class UsersAndPermissionsSchema(Schema):
+    id = fields.Int(dump_only=True)
+    permission = fields.Nested(PermissionsSchema)
     user = fields.Nested(PlainUserSchema)
 
-class PermissionsAndGroupsSchema(Schema):
+
+
+class GroupsAndPermissionsSchema(Schema):
     id = fields.Int(dump_only=True)
-    company = fields.Nested(PlainCompanySchema)
-    resource = fields.Nested(ResourceSchema)
-    action = fields.Nested(ActionSchema)
-    application = fields.Nested(ApplicationSchema)
+    permission = fields.Nested(PermissionsSchema)
     group = fields.Nested(PlainGroupSchema)
 
 
 class UserSchema(PlainUserSchema):
     groups = fields.List(fields.Nested(PlainGroupSchema()), dump_only=True)
     companies = fields.List(fields.Nested(PlainCompanySchema()), dump_only=True)
-    permissions = fields.List(fields.Nested(PermissionsAndUsersSchema()), dump_only=True)
+    permissions = fields.List(fields.Nested(UsersAndPermissionsSchema()), dump_only=True)
 
 class GroupSchema(PlainGroupSchema):
     users = fields.List(fields.Nested(PlainUserSchema()), dump_only=True)
-    permissions = fields.List(fields.Nested(PermissionsAndGroupsSchema()), dump_only=True)
+    permissions = fields.List(fields.Nested(GroupsAndPermissionsSchema()), dump_only=True)
 
 
 class CompanySettingsSchema(Schema):
     id = fields.Int(dump_only=True)
     hostname = fields.Str(required=True)
-    company = fields.Nested(PlainCompanySchema())
-    logo = BytesField()
+    #company = fields.Nested(PlainCompanySchema(), dump_only = True)
 
-
+class CompanySchema(PlainCompanySchema):
+    users = fields.List(fields.Nested(PlainUserSchema()), dump_only = True)
+    settings = fields.Nested(CompanySettingsSchema())
 
 
 # MANY TO MANY SCHEMAS
@@ -145,5 +164,10 @@ class CompaniesAndUsersSchema(Schema):
 class UsersAndGroupsSchema(Schema):
     user = fields.Nested(UserSchema)
     group = fields.Nested(GroupSchema)
+
+
+class CompaniesAndUsersSchema(Schema):
+    company = fields.Nested(CompanySchema)
+    user = fields.Nested(UserSchema)
 
 

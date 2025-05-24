@@ -1,7 +1,7 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from schemas import UserSchema, UserUpdateSchema,GroupSchema,UsersAndGroupsSchema
-from models import UserModel, GroupModel
+from schemas import UserSchema, UserUpdateSchema,GroupSchema,UsersAndGroupsSchema, UsersAndPermissionsSchema
+from models import UserModel, GroupModel, PermissionModel
 from db import db
 from blocklist import BLOCKLIST
 from flask_jwt_extended import jwt_required
@@ -104,7 +104,7 @@ class UserList(MethodView):
 @jwt_required
 @blp.route("/user/<int:user_id>/group/<int:group_id>")
 class LinkGroupsToUser(MethodView):
-    @blp.response(201, GroupSchema)
+    @blp.response(201, UserSchema)
     def post(self, user_id, group_id):
         user = UserModel.query.get_or_404(user_id)
         group = GroupModel.query.get_or_404(group_id)
@@ -134,5 +134,41 @@ class LinkGroupsToUser(MethodView):
             abort(500, message="An error occurred while removing the group.")
 
         return {"message": "Group removed from user", "user": user, "group": group}
+    
+
+
+@jwt_required
+@blp.route("/user/<int:user_id>/permission/<int:permission_id>")
+class LinkGroupsToUser(MethodView):
+    @blp.response(201, UserSchema)
+    def post(self, user_id, permission_id):
+        user = UserModel.query.get_or_404(user_id)
+        permission = PermissionModel.query.get_or_404(permission_id)
+
+        user.permissions.append(permission)
+
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except SQLAlchemyError:
+            abort(500, message="An error occurred while inserting the permission.")
+
+        return user
+
+    @blp.response(200, UserSchema)
+    def delete(self, user_id, permission_id):
+        user = UserModel.query.get_or_404(user_id)
+        permission = PermissionModel.query.get_or_404(permission_id)
+
+        user.permissions.remove(permission)
+
+        try:
+            db.session.add(user)
+            db.session.commit()
+
+        except SQLAlchemyError as ex:
+            abort(500, message="An error occurred while removing the permission.")
+
+        return user
 
 

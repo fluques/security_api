@@ -1,6 +1,6 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from schemas import ResourceSchema
+from schemas import ResourceSchema, ResourceUpdateSchema
 from models import ResourceModel
 from db import db
 from sqlalchemy.exc import SQLAlchemyError
@@ -10,7 +10,7 @@ blp = Blueprint("Resources", __name__, description="Operations on resources")
 
 
 @jwt_required
-@blp.route("/resource/<string:action_id>")
+@blp.route("/resource/<string:resource_id>")
 class Resource(MethodView):
     @blp.response(200, ResourceSchema)
     def get(cls, resource_id):
@@ -23,13 +23,14 @@ class Resource(MethodView):
         db.session.commit()
         return {"message": "Resource deleted."}
 
-    @blp.arguments(ResourceSchema)
+    @blp.arguments(ResourceUpdateSchema)
     @blp.response(200, ResourceSchema)
     def put(self, action_data, resource_id):
         resource = ResourceModel.query.get(resource_id)
 
         if resource:
             resource.name = action_data["name"]
+            resource.uri = action_data["uri"]
         else:
             resource = ResourceModel(id=resource_id, **action_data)
 
@@ -40,7 +41,7 @@ class Resource(MethodView):
 
 
 @jwt_required
-@blp.route("/action")
+@blp.route("/resource")
 class ActionList(MethodView):
     @blp.response(200, ResourceSchema(many=True))
     def get(cls):

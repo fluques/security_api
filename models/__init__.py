@@ -7,6 +7,7 @@ from models.group import GroupModel
 from models.group_user import GroupsUsers
 from models.action import ActionModel
 from models.resource import ResourceModel
-from models.permissions_users import PermissionsUsersModel
-from models.permissions_groups import PermissionsGroupsModel
+from models.permission import PermissionModel
+from models.users_permissions import UsersPermissionsModel
+from models.groups_permissions import GroupsPermissionsModel
 from models.companysettings import CompanySettingsModel

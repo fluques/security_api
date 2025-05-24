@@ -43,6 +43,9 @@ class ApplicationList(MethodView):
     @blp.response(200, ApplicationSchema(many= True))
     def get(cls):
         return ApplicationModel.query.all()
+    
+    @blp.arguments(ApplicationSchema)
+    @blp.response(201, ApplicationSchema)
     def post(cls, application_data):
         application = ApplicationModel(**application_data)
         try:   

@@ -12,11 +12,12 @@ from resources.group import blp as GroupBlueprint
 from resources.action import blp as ActionBlueprint
 from resources.resource import blp as ResourceBlueprint
 from resources.company import blp as CompanyBlueprint
+from resources.companysettings import blp as CompanySettingsBlueprint
 from resources.application import blp as ApplicationpBlueprint
-from resources.permissiongroup import blp as PermissionGroupBlueprint
-from resources.permissionuser import blp as PermissionUserBlueprint
+from resources.permissions import blp as PermissionsBlueprint
+#from resources.permissiongroup import blp as PermissionGroupBlueprint
+#from resources.permissionuser import blp as PermissionUserBlueprint
 from resources.settings import blp as SettingsBlueprint
-
 
 
 def create_app(db_url=None):
@@ -112,9 +113,11 @@ def create_app(db_url=None):
     api.register_blueprint(ResourceBlueprint)    
     api.register_blueprint(CompanyBlueprint)
     api.register_blueprint(ApplicationpBlueprint)
-    api.register_blueprint(PermissionGroupBlueprint)
-    api.register_blueprint(PermissionUserBlueprint)
+    api.register_blueprint(PermissionsBlueprint)
+    #api.register_blueprint(PermissionGroupBlueprint)
+    #api.register_blueprint(PermissionUserBlueprint)
     api.register_blueprint(SettingsBlueprint)
+    api.register_blueprint(CompanySettingsBlueprint)
 
 
     return app

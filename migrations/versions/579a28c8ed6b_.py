@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: c12fdbd98202
+Revision ID: 579a28c8ed6b
 Revises: 
-Create Date: 2025-05-22 00:56:36.490230
+Create Date: 2025-05-22 23:58:05.681931
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'c12fdbd98202'
+revision = '579a28c8ed6b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -42,7 +42,6 @@ def upgrade():
     sa.Column('emails', sa.String(length=350), nullable=False),
     sa.Column('phone', sa.String(length=150), nullable=False),
     sa.Column('celphone', sa.String(length=150), nullable=False),
-    sa.Column('logo', postgresql.BYTEA(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('emails'),
@@ -65,7 +64,9 @@ def upgrade():
     )
     op.create_table('settings',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('logo', postgresql.BYTEA(), nullable=True),
+    sa.Column('smtp_server', sa.String(), nullable=True),
+    sa.Column('smtp_user', sa.String(), nullable=True),
+    sa.Column('smtp_password', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('users',
@@ -78,12 +79,23 @@ def upgrade():
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('user_name')
     )
+    op.create_table('companies_settings',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('hostname', sa.String(), nullable=False),
+    sa.Column('company_id', sa.Integer(), nullable=True),
+    sa.Column('logo', postgresql.BYTEA(), nullable=True),
+    sa.ForeignKeyConstraint(['company_id'], ['companies.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('hostname')
+    )
     op.create_table('companies_users',
-    sa.Column('group_id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('group_id', sa.Integer(), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['group_id'], ['companies.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('group_id', 'user_id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('group_id', 'user_id')
     )
     op.create_table('groups_users',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -132,6 +144,7 @@ def downgrade():
     op.drop_table('permissions_groups')
     op.drop_table('groups_users')
     op.drop_table('companies_users')
+    op.drop_table('companies_settings')
     op.drop_table('users')
     op.drop_table('settings')
     op.drop_table('resources')

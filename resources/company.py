@@ -1,16 +1,16 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from db import db
-from models import CompanyModel
-from schemas import CompanySchema, CompanyUpdateSchema
+from models import CompanyModel, CompanySettingsModel, UserModel
+from schemas import CompanySchema, CompanyUpdateSchema, CompanySettingsSchema, UserSchema, CompaniesAndUsersSchema
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import jwt_required
 
 
-blp = Blueprint("Comapanies", __name__, description ="Operations on applications")
+blp = Blueprint("Companies", __name__, description ="Operations on applications")
 
 @jwt_required
-@blp.route("/company/string:company_id")
+@blp.route("/company/<string:company_id>")
 class Company(MethodView):
     @blp.response(200, CompanySchema)
     def get(cls, company_id):
@@ -57,12 +57,55 @@ class CompanyList(MethodView):
     @blp.response(200, CompanySchema(many=True))
     def get(cls):
         return CompanyModel.query.all()
+    
+    @blp.arguments(CompanySchema)
+    @blp.response(201, CompanySchema)
     def post(cls, company_data):
         company = CompanyModel(**company_data)
         try:   
             db.session.add(company)
             db.session.commit()
-        except SQLAlchemyError:
+        except SQLAlchemyError as ex:
             abort(500,message="An error occurred while inserting the company.")
 
         return company
+
+
+@jwt_required
+@blp.route("/company/<int:company_id>/user/<int:user_id>")
+class LinkUserToCompany(MethodView):
+    @blp.response(201, CompanySchema)
+    def post(self, company_id, user_id):
+        company = CompanyModel.query.get_or_404(company_id)
+        user = UserModel.query.get_or_404(user_id)
+
+        company.users.append(user)
+
+        try:
+            db.session.add(company)
+            db.session.commit()
+        except SQLAlchemyError:
+            abort(500, message="An error occurred while inserting the company user.")
+
+        return company
+
+    @blp.response(200, CompanySchema)
+    def delete(self, company_id, user_id):
+        company = CompanyModel.query.get_or_404(company_id)
+        user = UserModel.query.get_or_404(user_id)
+
+
+        company.users.remove(user)
+
+        try:
+            db.session.add(company)
+            db.session.commit()
+
+        except SQLAlchemyError:
+            abort(500, message="An error occurred while removing the user from company.")
+
+        return company
+
+
+
+
