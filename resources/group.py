@@ -102,9 +102,10 @@ class LinkUsersToGroup(MethodView):
 
 
 
-@jwt_required
+
 @blp.route("/group/<int:group_id>/permission/<int:permission_id>")
 class LinkGroupsToUser(MethodView):
+    @jwt_required()
     @blp.response(201, GroupSchema)
     def post(self, group_id, permission_id):
         group = GroupModel.query.get_or_404(group_id)
@@ -120,6 +121,7 @@ class LinkGroupsToUser(MethodView):
 
         return group
 
+    @jwt_required()
     @blp.response(200, GroupSchema)
     def delete(self, group_id, permission_id):
         group = GroupModel.query.get_or_404(group_id)

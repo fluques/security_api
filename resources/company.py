@@ -73,6 +73,43 @@ class CompanyList(MethodView):
             abort(500,message="An error occurred while inserting the company.")
 
         return company
+    
+
+
+
+@blp.route("/company/<string:company_id>/settings")
+class aompanySettings(MethodView):
+    @jwt_required()
+    @blp.response(200, CompanySettingsSchema)
+    def get(cls, company_id):
+        settings = CompanySettingsModel.query.get_or_404(company_id)
+        return settings
+    
+    @jwt_required()
+    def delete(cls, company_id):
+        settings = CompanySettingsModel.query.get_or_404(company_id)
+        db.session.delete(settings)
+        db.session.commit()
+        return {"message": "Company settings deleted."}
+
+    @jwt_required()
+    @blp.arguments(CompanySettingsSchema)
+    @blp.response(200, CompanySettingsSchema)
+    def put(self, settings_data, company_id):
+        settings = CompanySettingsModel.query.get(company_id)
+
+        if settings:
+            settings.hostname = settings_data["hostname"]
+        else:
+            settings = CompanySettingsModel(id=company_id, **settings_data)
+
+        db.session.add(settings)
+        db.session.commit()
+
+        return settings
+
+
+
 
 
 @blp.route("/company/<int:company_id>/user/<int:user_id>")
@@ -88,7 +125,7 @@ class LinkUserToCompany(MethodView):
         try:
             db.session.add(company)
             db.session.commit()
-        except SQLAlchemyError:
+        except SQLAlchemyError as ex:
             abort(500, message="An error occurred while inserting the company user.")
 
         return company
