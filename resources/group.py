@@ -10,20 +10,23 @@ blp = Blueprint("Groups", __name__, description="Operations on groups")
 
 
 
-@jwt_required
+
 @blp.route("/group/<string:group_id>")
 class Group(MethodView):
+    @jwt_required()
     @blp.response(200, GroupSchema)
     def get(cls, group_id):
         group = GroupModel.query.get_or_404(group_id)
         return group
 
+    @jwt_required()
     def delete(cls, group_id):
         group = GroupModel.query.get_or_404(group_id)
         db.session.delete(group)
         db.session.commit()
         return {"message": "Group deleted."}
 
+    @jwt_required()
     @blp.arguments(GroupUpdateSchema)
     @blp.response(200, GroupSchema)
     def put(self, group_data, group_id):
@@ -40,13 +43,14 @@ class Group(MethodView):
         return group
 
 
-@jwt_required
 @blp.route("/group")
 class GroupList(MethodView):
+    @jwt_required()
     @blp.response(200, GroupSchema(many=True))
     def get(cls):
         return GroupModel.query.all()
 
+    @jwt_required()
     @blp.arguments(GroupSchema)
     @blp.response(201, GroupSchema)
     def post(cls, group_data):
@@ -59,9 +63,10 @@ class GroupList(MethodView):
 
         return group
     
-@jwt_required
+
 @blp.route("/group/<int:group_id>/user/<int:user_id>")
 class LinkUsersToGroup(MethodView):
+    @jwt_required()
     @blp.response(201, UserSchema)
     def post(self, group_id, user_id ):
         group = GroupModel.query.get_or_404(group_id)
@@ -77,6 +82,7 @@ class LinkUsersToGroup(MethodView):
 
         return group
 
+    @jwt_required()
     @blp.response(200, UsersAndGroupsSchema)
     def delete(self, group_id, user_id):    
         group = GroupModel.query.get_or_404(group_id)

@@ -8,20 +8,23 @@ from flask_jwt_extended import jwt_required
 
 blp = Blueprint("Applications", __name__, description="Operations on applications")
 
-@jwt_required
+
 @blp.route("/application/<string:application_id>")
 class Application(MethodView):
+    @jwt_required()
     @blp.response(200, ApplicationSchema)
     def get(cls, application_id):
         application = ApplicationModel.query.get_or_404(application_id)
         return application 
           
+    @jwt_required()
     def delete(cls, application_id):
         application = ApplicationModel.query.get_or_404(application_id)
         db.session.delete(application)
         db.session.commit()
         return {"message": "Application deleted."}
     
+    @jwt_required()
     @blp.arguments(ApplicationUpdateSchema)
     @blp.response(200, ApplicationSchema)
     def put(cls, application_data, application_id):
@@ -37,13 +40,15 @@ class Application(MethodView):
 
         return application
 
-@jwt_required
+
 @blp.route("/application")
 class ApplicationList(MethodView):
+    @jwt_required()
     @blp.response(200, ApplicationSchema(many= True))
     def get(cls):
         return ApplicationModel.query.all()
     
+    @jwt_required()
     @blp.arguments(ApplicationSchema)
     @blp.response(201, ApplicationSchema)
     def post(cls, application_data):

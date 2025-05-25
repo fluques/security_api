@@ -9,20 +9,23 @@ from flask_jwt_extended import jwt_required
 blp = Blueprint("Permissions", __name__, description="Operations on permissions")
 
 
-@jwt_required
+
 @blp.route("/permission/<string:permission_id>")
 class Resource(MethodView):
+    @jwt_required()
     @blp.response(200, PermissionsSchema)
     def get(cls, permission_id):
         permission = PermissionModel.query.get_or_404(permission_id)
         return permission
 
+    @jwt_required()
     def delete(cls, permission_id):
         permission = PermissionModel.query.get_or_404(permission_id)
         db.session.delete(permission)
         db.session.commit()
         return {"message": "Permission deleted."}
 
+    @jwt_required()
     @blp.arguments(PlainPermissionsSchema)
     @blp.response(200, PermissionsSchema)
     def put(self, permission_data, permission_id):
@@ -43,13 +46,15 @@ class Resource(MethodView):
         return permission
 
 
-@jwt_required
+
 @blp.route("/permission")
 class ActionList(MethodView):
+    @jwt_required()
     @blp.response(200, PermissionsSchema(many=True))
     def get(cls):
         return PermissionModel.query.all()
 
+    @jwt_required()
     @blp.arguments(PlainPermissionsSchema)
     @blp.response(201, PermissionsSchema)
     def post(cls, permission_data):

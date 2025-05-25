@@ -9,20 +9,23 @@ from flask_jwt_extended import jwt_required
 blp = Blueprint("Actions", __name__, description="Operations on actions")
 
 
-@jwt_required
+
 @blp.route("/action/<string:action_id>")
 class Action(MethodView):
+    @jwt_required()
     @blp.response(200, ActionSchema)
     def get(cls, action_id):
         action = ActionModel.query.get_or_404(action_id)
         return action
 
+    @jwt_required()
     def delete(cls, action_id):
         action = ActionModel.query.get_or_404(action_id)
         db.session.delete(action)
         db.session.commit()
         return {"message": "Action deleted."}
 
+    @jwt_required()
     @blp.arguments(ActionUpdateSchema)
     @blp.response(200, ActionSchema)
     def put(self, action_data, action_id):
@@ -39,13 +42,15 @@ class Action(MethodView):
         return action
 
 
-@jwt_required
+
 @blp.route("/action")
 class ActionList(MethodView):
+    @jwt_required()
     @blp.response(200, ActionSchema(many=True))
     def get(cls):
         return ActionModel.query.all()
 
+    @jwt_required()
     @blp.arguments(ActionSchema)
     @blp.response(201, ActionSchema)
     def post(cls, action_data):

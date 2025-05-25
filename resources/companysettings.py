@@ -1,7 +1,7 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from schemas import CompanySchema, CompanyUpdateSchema, CompanySettingsSchema
-from models import CompanySettingsModel, CompanyModel
+from schemas import CompanySettingsSchema
+from models import CompanySettingsModel
 from db import db
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import jwt_required
@@ -9,47 +9,39 @@ from flask_jwt_extended import jwt_required
 blp = Blueprint("CompanySettings", __name__, description="Operations on Company settings")
 
 
-@jwt_required
+
 @blp.route("/company/<string:company_id>/settings")
-class CompanySettingsList(MethodView):
-    @blp.response(200, CompanySchema)
+class aompanySettings(MethodView):
+    @jwt_required()
+    @blp.response(200, CompanySettingsSchema)
     def get(cls, company_id):
-        return CompanyModel.query.get_or_404(company_id)
+        settings = CompanySettingsModel.query.get_or_404(company_id)
+        return settings
     
-    
+    @jwt_required()
     def delete(cls, company_id):
-        company = CompanyModel.query.get_or_404(company_id)
-        db.session.delete(company.settings)
+        settings = CompanySettingsModel.query.get_or_404(company_id)
+        db.session.delete(settings)
         db.session.commit()
         return {"message": "Company settings deleted."}
 
-
+    @jwt_required()
     @blp.arguments(CompanySettingsSchema)
-    @blp.response(201, CompanySchema)
-    def post(cls,  settings_data, company_id):
-        company = CompanyModel.query.get_or_404(company_id)
-        company.settings = CompanySettingsModel(**settings_data)
-
-        
-        try:   
-            db.session.add(company)
-            db.session.commit()
-        except SQLAlchemyError as ex:
-            abort(500,message="An error occurred while inserting the company settings.")
-
-        return company
-    
-    @blp.arguments(CompanySettingsSchema)
-    @blp.response(200, CompanySchema)
+    @blp.response(200, CompanySettingsSchema)
     def put(self, settings_data, company_id):
-        company = CompanyModel.query.get(company_id)
+        settings = CompanySettingsModel.query.get(company_id)
 
-        if company.settings:
-            company.settings.hostname = settings_data["hostname"]
+        if settings:
+            settings.smtp_server = settings_data["smtp_server"]
+            settings.smtp_user = settings_data["smtp_user"]
+            settings.smtp_password = settings_data["smtp_password"]
+
         else:
-            company.settings = CompanySettingsModel(**settings_data)
+            settings = CompanySettingsModel(id=company_id, **settings_data)
 
-        db.session.add(company)
+        db.session.add(settings)
         db.session.commit()
 
-        return company
+        return settings
+
+

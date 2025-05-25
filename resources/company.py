@@ -9,14 +9,16 @@ from flask_jwt_extended import jwt_required
 
 blp = Blueprint("Companies", __name__, description ="Operations on applications")
 
-@jwt_required
+
 @blp.route("/company/<string:company_id>")
 class Company(MethodView):
+    @jwt_required()
     @blp.response(200, CompanySchema)
     def get(cls, company_id):
         company = CompanyModel.query.get_or_404(company_id)
         return company
 
+    @jwt_required()
     def delete(cls, company_id):
         company = CompanyModel.query.get_or_404(company_id)
         db.session.delete(company)
@@ -24,6 +26,7 @@ class Company(MethodView):
         return {"message": "Company deleted."}
     
 
+    @jwt_required()
     @blp.arguments(CompanyUpdateSchema)
     @blp.response(200, CompanySchema)
     def put(cls, company_data, company_id):
@@ -51,13 +54,14 @@ class Company(MethodView):
         return company
 
 
-@jwt_required
 @blp.route("/company")
 class CompanyList(MethodView):
+    @jwt_required()
     @blp.response(200, CompanySchema(many=True))
     def get(cls):
         return CompanyModel.query.all()
     
+    @jwt_required()
     @blp.arguments(CompanySchema)
     @blp.response(201, CompanySchema)
     def post(cls, company_data):
@@ -71,9 +75,9 @@ class CompanyList(MethodView):
         return company
 
 
-@jwt_required
 @blp.route("/company/<int:company_id>/user/<int:user_id>")
 class LinkUserToCompany(MethodView):
+    @jwt_required()
     @blp.response(201, CompanySchema)
     def post(self, company_id, user_id):
         company = CompanyModel.query.get_or_404(company_id)
@@ -89,6 +93,7 @@ class LinkUserToCompany(MethodView):
 
         return company
 
+    @jwt_required()
     @blp.response(200, CompanySchema)
     def delete(self, company_id, user_id):
         company = CompanyModel.query.get_or_404(company_id)
@@ -96,7 +101,7 @@ class LinkUserToCompany(MethodView):
 
 
         company.users.remove(user)
-
+        
         try:
             db.session.add(company)
             db.session.commit()

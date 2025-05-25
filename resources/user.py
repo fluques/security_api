@@ -49,28 +49,31 @@ class UserLogout(MethodView):
         BLOCKLIST.add(jti)
         return {"message": "Successfully logged out"}, 200
 
-@jwt_required
+
 @blp.route("/user/<int:user_id>")
 class User(MethodView):
     @blp.response(200, UserSchema)
+    @jwt_required()
     def get(self, user_id):
         user = UserModel.query.get_or_404(user_id)
         return user
 
+    @jwt_required()
     def delete(self, user_id):
         user = UserModel.query.get_or_404(user_id)
         db.session.delete(user)
         db.session.commit()
         return {"message": "User deleted."}
 
+    @jwt_required()
     @blp.arguments(UserUpdateSchema)
     @blp.response(200, UserSchema)
     def put(self, user_data, user_id):
         user = UserModel.query.get(user_id)
-
         if user:
             user.user_name = user_data["user_name"]
-            user.password = user_data["password"]
+
+            user.password= pbkdf2_sha256.hash(user_data["password"])
             user.email = user_data["email"]
             user.is_active = user_data["is_active"]
         else:
@@ -81,13 +84,14 @@ class User(MethodView):
 
         return user
 
-@jwt_required
 @blp.route("/user")
 class UserList(MethodView):
+    @jwt_required()
     @blp.response(200, UserSchema(many=True))
     def get(self):
         return UserModel.query.all()
 
+    @jwt_required()
     @blp.arguments(UserSchema)
     @blp.response(201, UserSchema)
     def post(self, user_data):
@@ -101,9 +105,10 @@ class UserList(MethodView):
 
         return user
 
-@jwt_required
+
 @blp.route("/user/<int:user_id>/group/<int:group_id>")
 class LinkGroupsToUser(MethodView):
+    @jwt_required()
     @blp.response(201, UserSchema)
     def post(self, user_id, group_id):
         user = UserModel.query.get_or_404(user_id)
@@ -119,6 +124,7 @@ class LinkGroupsToUser(MethodView):
 
         return user
 
+    @jwt_required()
     @blp.response(200, UsersAndGroupsSchema)
     def delete(self, user_id, group_id):
         user = UserModel.query.get_or_404(user_id)
@@ -137,9 +143,9 @@ class LinkGroupsToUser(MethodView):
     
 
 
-@jwt_required
 @blp.route("/user/<int:user_id>/permission/<int:permission_id>")
-class LinkGroupsToUser(MethodView):
+class LinkPermissionToUser(MethodView):
+    @jwt_required()
     @blp.response(201, UserSchema)
     def post(self, user_id, permission_id):
         user = UserModel.query.get_or_404(user_id)
@@ -150,11 +156,12 @@ class LinkGroupsToUser(MethodView):
         try:
             db.session.add(user)
             db.session.commit()
-        except SQLAlchemyError:
+        except SQLAlchemyError as ex:
             abort(500, message="An error occurred while inserting the permission.")
 
         return user
 
+    @jwt_required()
     @blp.response(200, UserSchema)
     def delete(self, user_id, permission_id):
         user = UserModel.query.get_or_404(user_id)
