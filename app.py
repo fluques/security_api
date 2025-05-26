@@ -40,9 +40,9 @@ def create_app(db_url=None):
     @jwt.additional_claims_loader
     def add_claims_to_jwt(identity):
         # TODO: Read from a config file instead of hard-coding
-        if identity == 1:
-            return {"is_admin": True}
-        return {"is_admin": False}
+        
+        return {"identity": identity}
+
 
 
     @jwt.token_in_blocklist_loader
@@ -59,7 +59,7 @@ def create_app(db_url=None):
     def invalid_token_callback(error):
         return (
             jsonify(
-                {"message": "Signature verification failedc2.", "error": "invalid_token"}
+                {"message": "Signature verification failedc.", "error": "invalid_token"}
             ),
             401,
         )

@@ -1,4 +1,5 @@
-from flask.views import MethodView
+from flask import Response
+from flask.views import MethodView, request
 from flask_smorest import Blueprint, abort
 from schemas import UserSchema, UserUpdateSchema,GroupSchema,UsersAndGroupsSchema, UsersAndPermissionsSchema
 from models import UserModel, GroupModel, PermissionModel
@@ -7,6 +8,7 @@ from blocklist import BLOCKLIST
 from flask_jwt_extended import jwt_required
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.hash import pbkdf2_sha256
+from resources.permissions import PermissionValidate
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -55,11 +57,17 @@ class User(MethodView):
     @blp.response(200, UserSchema)
     @jwt_required()
     def get(self, user_id):
+        if not PermissionValidate().get("/user/<int:user_id>", "GET"):
+            abort(401,message=f'No permission for resource /user/<int:user_id>, user {user_id}, action PUT')
+        
         user = UserModel.query.get_or_404(user_id)
         return user
 
     @jwt_required()
     def delete(self, user_id):
+        if not PermissionValidate().get("/user/<int:user_id>", "DELETE"):
+            abort(401,message=f'No permission for resource /user/<int:user_id>, user {user_id}, action DELETE')
+
         user = UserModel.query.get_or_404(user_id)
         db.session.delete(user)
         db.session.commit()
@@ -69,6 +77,10 @@ class User(MethodView):
     @blp.arguments(UserUpdateSchema)
     @blp.response(200, UserSchema)
     def put(self, user_data, user_id):
+        objPermissionValidate =PermissionValidate()
+        if not objPermissionValidate.get("/user/<int:user_id>", "PUT"):
+            abort(401,message=f'No permission for resource /user/<int:user_id>, user {user_id}, action PUT')
+        
         user = UserModel.query.get(user_id)
         if user:
             user.user_name = user_data["user_name"]

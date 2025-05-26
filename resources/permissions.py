@@ -1,10 +1,12 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from schemas import PermissionsSchema, PermissionsUpdateSchema, PlainPermissionsSchema
-from models import PermissionModel
+from models import PermissionModel, UserModel, UsersPermissionsModel, GroupModel, GroupsPermissionsModel, GroupsUsersModel, ResourceModel, ActionModel
 from db import db
 from sqlalchemy.exc import SQLAlchemyError
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
+
 
 blp = Blueprint("Permissions", __name__, description="Operations on permissions")
 
@@ -67,3 +69,21 @@ class ActionList(MethodView):
 
         return permission
     
+
+class PermissionValidate():
+    def get(cls, resource_uri, action_name):
+        current_user = get_jwt_identity()
+        user = UserModel.query.get(current_user)
+        action = ActionModel.query.where(ActionModel.name == action_name).first()
+        resource = ResourceModel.query.where(ResourceModel.uri == resource_uri).first()
+        
+        user_permissions = UsersPermissionsModel.query.join(PermissionModel, (UsersPermissionsModel.permissions_id==PermissionModel.id) & (PermissionModel.action_id==action.id) & (PermissionModel.resource_id==resource.id) & (UsersPermissionsModel.user_id == user.id)).all()
+        if len(user_permissions) >0:
+            return True
+        
+        group_permissions = GroupsPermissionsModel.query.join(PermissionModel, (GroupsPermissionsModel.permissions_id==PermissionModel.id) & (PermissionModel.action_id==action.id) & (PermissionModel.resource_id==resource.id) & (GroupsPermissionsModel.group_id.in_([x.id for x in user.groups]))).all()
+        if len(group_permissions):
+            return True
+        
+        return False
+        
