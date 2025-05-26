@@ -5,7 +5,7 @@ from models import CompanyModel, CompanySettingsModel, UserModel
 from schemas import CompanySchema, CompanyUpdateSchema, CompanySettingsSchema, UserSchema, CompaniesAndUsersSchema
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import jwt_required
-
+from resources.permissions import PermissionValidate
 
 blp = Blueprint("Companies", __name__, description ="Operations on applications")
 
@@ -15,11 +15,17 @@ class Company(MethodView):
     @jwt_required()
     @blp.response(200, CompanySchema)
     def get(cls, company_id):
+        if not PermissionValidate().get("/company/<string:company_id>", "GET"):
+            abort(401,message=f'Authorization rejected for /company/<string:company_id>, action GET')
+
         company = CompanyModel.query.get_or_404(company_id)
         return company
 
     @jwt_required()
     def delete(cls, company_id):
+        if not PermissionValidate().get("/company/<string:company_id>", "DELETE"):
+            abort(401,message=f'Authorization rejected for /company/<string:company_id>, action DELETE')
+
         company = CompanyModel.query.get_or_404(company_id)
         db.session.delete(company)
         db.session.commit()
@@ -30,6 +36,9 @@ class Company(MethodView):
     @blp.arguments(CompanyUpdateSchema)
     @blp.response(200, CompanySchema)
     def put(cls, company_data, company_id):
+        if not PermissionValidate().get("/company/<string:company_id>", "PUT"):
+            abort(401,message=f'Authorization rejected for /company/<string:company_id>, action PUT')
+
         company = CompanyModel.query.get(company_id)
 
         if company:
@@ -59,12 +68,18 @@ class CompanyList(MethodView):
     @jwt_required()
     @blp.response(200, CompanySchema(many=True))
     def get(cls):
+        if not PermissionValidate().get("/company", "GET"):
+            abort(401,message=f'Authorization rejected for /company, action GET')
+
         return CompanyModel.query.all()
     
     @jwt_required()
     @blp.arguments(CompanySchema)
     @blp.response(201, CompanySchema)
     def post(cls, company_data):
+        if not PermissionValidate().get("/company", "POST"):
+            abort(401,message=f'Authorization rejected for /company, action POST')
+
         company = CompanyModel(**company_data)
         try:   
             db.session.add(company)
@@ -82,11 +97,17 @@ class aompanySettings(MethodView):
     @jwt_required()
     @blp.response(200, CompanySettingsSchema)
     def get(cls, company_id):
+        if not PermissionValidate().get("/company/<string:company_id>/settings", "GET"):
+            abort(401,message=f'Authorization rejected for /company/<string:company_id>/settings, action GET')
+
         settings = CompanySettingsModel.query.get_or_404(company_id)
         return settings
     
     @jwt_required()
     def delete(cls, company_id):
+        if not PermissionValidate().get("/company/<string:company_id>/settings", "DELETE"):
+            abort(401,message=f'Authorization rejected for /company/<string:company_id>/settings, action DELETE')
+
         settings = CompanySettingsModel.query.get_or_404(company_id)
         db.session.delete(settings)
         db.session.commit()
@@ -96,6 +117,9 @@ class aompanySettings(MethodView):
     @blp.arguments(CompanySettingsSchema)
     @blp.response(200, CompanySettingsSchema)
     def put(self, settings_data, company_id):
+        if not PermissionValidate().get("/company/<string:company_id>/settings", "PUT"):
+            abort(401,message=f'Authorization rejected for /company/<string:company_id>/settings, action PUT')
+
         settings = CompanySettingsModel.query.get(company_id)
 
         if settings:
@@ -117,9 +141,11 @@ class LinkUserToCompany(MethodView):
     @jwt_required()
     @blp.response(201, CompanySchema)
     def post(self, company_id, user_id):
+        if not PermissionValidate().get("/company/<int:company_id>/user/<int:user_id>", "POST"):
+            abort(401,message=f'Authorization rejected for /company/<int:company_id>/user/<int:user_id>, action POST')
+
         company = CompanyModel.query.get_or_404(company_id)
         user = UserModel.query.get_or_404(user_id)
-
         company.users.append(user)
 
         try:
@@ -133,10 +159,11 @@ class LinkUserToCompany(MethodView):
     @jwt_required()
     @blp.response(200, CompanySchema)
     def delete(self, company_id, user_id):
+        if not PermissionValidate().get("/company/<int:company_id>/user/<int:user_id>", "DELETE"):
+            abort(401,message=f'Authorization rejected for /company/<int:company_id>/user/<int:user_id>, action DELETE')
+
         company = CompanyModel.query.get_or_404(company_id)
         user = UserModel.query.get_or_404(user_id)
-
-
         company.users.remove(user)
         
         try:

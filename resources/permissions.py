@@ -17,11 +17,17 @@ class Resource(MethodView):
     @jwt_required()
     @blp.response(200, PermissionsSchema)
     def get(cls, permission_id):
+        if not PermissionValidate().get("/permission/<string:permission_id>", "GET"):
+            abort(401,message=f'Authorization rejected for resource /permission/<string:permission_id>, action PUT')
+
         permission = PermissionModel.query.get_or_404(permission_id)
         return permission
 
     @jwt_required()
     def delete(cls, permission_id):
+        if not PermissionValidate().get("/permission/<string:permission_id>", "DELETE"):
+            abort(401,message=f'Authorization rejected for resource /permission/<string:permission_id>, action DELETE')
+
         permission = PermissionModel.query.get_or_404(permission_id)
         db.session.delete(permission)
         db.session.commit()
@@ -31,6 +37,9 @@ class Resource(MethodView):
     @blp.arguments(PlainPermissionsSchema)
     @blp.response(200, PermissionsSchema)
     def put(self, permission_data, permission_id):
+        if not PermissionValidate().get("/permission/<string:permission_id>", "PUT"):
+            abort(401,message=f'Authorization rejected for resource /permission/<string:permission_id>, action PUT')
+
         permission = PermissionModel.query.get(permission_id)
 
         if permission:
@@ -54,12 +63,18 @@ class ActionList(MethodView):
     @jwt_required()
     @blp.response(200, PermissionsSchema(many=True))
     def get(cls):
+        if not PermissionValidate().get("/permission", "GET"):
+            abort(401,message=f'Authorization rejected for resource /permission, action GET')
+
         return PermissionModel.query.all()
 
     @jwt_required()
     @blp.arguments(PlainPermissionsSchema)
     @blp.response(201, PermissionsSchema)
     def post(cls, permission_data):
+        if not PermissionValidate().get("/permission", "POST"):
+            abort(401,message=f'Authorization rejected for resource /permission, action POST')
+
         permission=PermissionModel(**permission_data)
         try:   
             db.session.add(permission)
@@ -76,6 +91,13 @@ class PermissionValidate():
         user = UserModel.query.get(current_user)
         action = ActionModel.query.where(ActionModel.name == action_name).first()
         resource = ResourceModel.query.where(ResourceModel.uri == resource_uri).first()
+
+        #Check if is administrator
+        if 1 in [x.id for x in user.groups] or user.id == 1:
+            return True
+        
+        if not action or not resource:
+            return False
         
         user_permissions = UsersPermissionsModel.query.join(PermissionModel, (UsersPermissionsModel.permissions_id==PermissionModel.id) & (PermissionModel.action_id==action.id) & (PermissionModel.resource_id==resource.id) & (UsersPermissionsModel.user_id == user.id)).all()
         if len(user_permissions) >0:

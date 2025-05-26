@@ -1,3 +1,4 @@
+from sqlalchemy import UniqueConstraint
 from db import db
 from flask_login import UserMixin
 
@@ -8,6 +9,9 @@ class GroupsUsersModel(db.Model, UserMixin):
     group_id = db.Column(db.Integer, db.ForeignKey("groups.id"))
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
+    __table_args__ = (
+        UniqueConstraint(group_id, user_id),
+    )
 
     def __repr__(self):
         return f'<Group users {self.id}>'

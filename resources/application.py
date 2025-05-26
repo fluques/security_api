@@ -5,6 +5,7 @@ from models import ApplicationModel
 from db import db
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import jwt_required
+from resources.permissions import PermissionValidate
 
 blp = Blueprint("Applications", __name__, description="Operations on applications")
 
@@ -14,11 +15,17 @@ class Application(MethodView):
     @jwt_required()
     @blp.response(200, ApplicationSchema)
     def get(cls, application_id):
+        if not PermissionValidate().get("/application/<string:application_id>", "GET"):
+            abort(401,message=f'Authorization rejected for /application/<string:application_id>, action GET')
+
         application = ApplicationModel.query.get_or_404(application_id)
         return application 
           
     @jwt_required()
     def delete(cls, application_id):
+        if not PermissionValidate().get("/application/<string:application_id>", "DELETE"):
+            abort(401,message=f'Authorization rejected for /application/<string:application_id>, action DELETE')
+
         application = ApplicationModel.query.get_or_404(application_id)
         db.session.delete(application)
         db.session.commit()
@@ -28,6 +35,9 @@ class Application(MethodView):
     @blp.arguments(ApplicationUpdateSchema)
     @blp.response(200, ApplicationSchema)
     def put(cls, application_data, application_id):
+        if not PermissionValidate().get("/application/<string:application_id>", "PUT"):
+            abort(401,message=f'Authorization rejected for /application/<string:application_id>, action PUT')
+
         application = ApplicationModel.query.get(application_id)
 
         if application:
@@ -46,12 +56,18 @@ class ApplicationList(MethodView):
     @jwt_required()
     @blp.response(200, ApplicationSchema(many= True))
     def get(cls):
+        if not PermissionValidate().get("/application", "GET"):
+            abort(401,message=f'Authorization rejected for /application, action GET')
+
         return ApplicationModel.query.all()
     
     @jwt_required()
     @blp.arguments(ApplicationSchema)
     @blp.response(201, ApplicationSchema)
     def post(cls, application_data):
+        if not PermissionValidate().get("/application", "POST"):
+            abort(401,message=f'Authorization rejected for /application, action POST')
+
         application = ApplicationModel(**application_data)
         try:   
             db.session.add(application)

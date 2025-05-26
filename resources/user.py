@@ -58,7 +58,7 @@ class User(MethodView):
     @jwt_required()
     def get(self, user_id):
         if not PermissionValidate().get("/user/<int:user_id>", "GET"):
-            abort(401,message=f'No permission for resource /user/<int:user_id>, user {user_id}, action PUT')
+            abort(401,message=f'Authorization rejected for resource /user/<int:user_id>, action PUT')
         
         user = UserModel.query.get_or_404(user_id)
         return user
@@ -66,7 +66,7 @@ class User(MethodView):
     @jwt_required()
     def delete(self, user_id):
         if not PermissionValidate().get("/user/<int:user_id>", "DELETE"):
-            abort(401,message=f'No permission for resource /user/<int:user_id>, user {user_id}, action DELETE')
+            abort(401,message=f'Authorization rejected for resource /user/<int:user_id>, action DELETE')
 
         user = UserModel.query.get_or_404(user_id)
         db.session.delete(user)
@@ -77,9 +77,8 @@ class User(MethodView):
     @blp.arguments(UserUpdateSchema)
     @blp.response(200, UserSchema)
     def put(self, user_data, user_id):
-        objPermissionValidate =PermissionValidate()
-        if not objPermissionValidate.get("/user/<int:user_id>", "PUT"):
-            abort(401,message=f'No permission for resource /user/<int:user_id>, user {user_id}, action PUT')
+        if not PermissionValidate().get("/user/<int:user_id>", "PUT"):
+            abort(401,message=f'Authorization rejected for resource /user/<int:user_id>, action PUT')
         
         user = UserModel.query.get(user_id)
         if user:
@@ -101,12 +100,20 @@ class UserList(MethodView):
     @jwt_required()
     @blp.response(200, UserSchema(many=True))
     def get(self):
+
+        if not PermissionValidate().get("/user", "GET"):
+            abort(401,message=f'Authorization rejected for resource /user, action GET')
+
         return UserModel.query.all()
 
     @jwt_required()
     @blp.arguments(UserSchema)
     @blp.response(201, UserSchema)
     def post(self, user_data):
+
+        if not PermissionValidate().get("/user", "POST"):
+            abort(401,message=f'Authorization rejected for resource /user, action POST')
+
         user=UserModel(**user_data)
         try:
             user.password=pbkdf2_sha256.hash(user_data["password"])
@@ -123,9 +130,12 @@ class LinkGroupsToUser(MethodView):
     @jwt_required()
     @blp.response(201, UserSchema)
     def post(self, user_id, group_id):
+
+        if not PermissionValidate().get("/user/<int:user_id>/group/<int:group_id>", "POST"):
+            abort(401,message=f'Authorization rejected for resource /user/<int:user_id>/group/<int:group_id>, action POST')
+
         user = UserModel.query.get_or_404(user_id)
         group = GroupModel.query.get_or_404(group_id)
-
         user.groups.append(group)
 
         try:
@@ -137,13 +147,15 @@ class LinkGroupsToUser(MethodView):
         return user
 
     @jwt_required()
-    @blp.response(200, UsersAndGroupsSchema)
+    @blp.response(200, UserSchema)
     def delete(self, user_id, group_id):
+
+        if not PermissionValidate().get("/user/<int:user_id>/group/<int:group_id>", "DELETE"):
+            abort(401,message=f'Authorization rejected for resource /user/<int:user_id>/group/<int:group_id>, action DELETE')
+
         user = UserModel.query.get_or_404(user_id)
         group = GroupModel.query.get_or_404(group_id)
-
         user.groups.remove(group)
-
         try:
             db.session.add(user)
             db.session.commit()
@@ -160,6 +172,10 @@ class LinkPermissionToUser(MethodView):
     @jwt_required()
     @blp.response(201, UserSchema)
     def post(self, user_id, permission_id):
+
+        if not PermissionValidate().get("/user/<int:user_id>/permission/<int:permission_id>", "POST"):
+            abort(401,message=f'Authorization rejected for resource /user/<int:user_id>/permission/<int:permission_id>, action POST')
+
         user = UserModel.query.get_or_404(user_id)
         permission = PermissionModel.query.get_or_404(permission_id)
 
@@ -176,9 +192,12 @@ class LinkPermissionToUser(MethodView):
     @jwt_required()
     @blp.response(200, UserSchema)
     def delete(self, user_id, permission_id):
+
+        if not PermissionValidate().get("/user/<int:user_id>/permission/<int:permission_id>", "DELETE"):
+            abort(401,message=f'Authorization rejected for resource /user/<int:user_id>/permission/<int:permission_id>, action DELETE')
+
         user = UserModel.query.get_or_404(user_id)
         permission = PermissionModel.query.get_or_404(permission_id)
-
         user.permissions.remove(permission)
 
         try:
