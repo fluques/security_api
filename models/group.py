@@ -1,6 +1,7 @@
 from db import db
 from flask_login import UserMixin
 from sqlalchemy.event import listens_for
+from sqlalchemy import event, text
 
 
 class GroupModel(db.Model, UserMixin):
@@ -16,3 +17,9 @@ class GroupModel(db.Model, UserMixin):
     def __repr__(self):
         return f'<Group {self.username}>'
     
+
+@event.listens_for(GroupModel.__table__, "after_create")
+def after_create(target, connection, **kw):
+    connection.execute(
+        text('INSERT INTO "groups" ("name", is_active) VALUES (\'admin\', True);')
+    )

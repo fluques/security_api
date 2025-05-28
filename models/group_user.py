@@ -1,6 +1,7 @@
 from sqlalchemy import UniqueConstraint
 from db import db
 from flask_login import UserMixin
+from sqlalchemy import event, text
 
 class GroupsUsersModel(db.Model, UserMixin):
     __tablename__ = "groups_users"
@@ -15,3 +16,9 @@ class GroupsUsersModel(db.Model, UserMixin):
 
     def __repr__(self):
         return f'<Group users {self.id}>'
+    
+@event.listens_for(GroupsUsersModel.__table__, "after_create")
+def after_create(target, connection, **kw):
+    connection.execute(
+        text('INSERT INTO "groups_users" ("id","group_id","user_id") VALUES (1, 1, 1);')
+    )

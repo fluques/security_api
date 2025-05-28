@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from flask_smorest import abort,Api
 from flask_jwt_extended import JWTManager
 from blocklist import BLOCKLIST
-from db import db
+from db import db, check_if_database_exists
 import models
 from flask_migrate import Migrate
 import os
@@ -16,9 +16,13 @@ from resources.application import blp as ApplicationpBlueprint
 from resources.permissions import blp as PermissionsBlueprint
 from resources.settings import blp as SettingsBlueprint
 
+from dotenv import load_dotenv
 
 def create_app(db_url=None):
+    
+
     app=Flask(__name__)
+    load_dotenv()
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["API_TITLE"] = "Security REST API"
     app.config["API_VERSION"] = "v1"
@@ -26,15 +30,25 @@ def create_app(db_url=None):
     app.config["OPENAPI_URL_PREFIX"] = "/"
     app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
     app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
-    app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL") or "postgresql://postgres:example@192.168.51.202:5432/security_db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL") 
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["PROPAGATE_EXCEPTIONS"] = True
+
+    check_if_database_exists(os.getenv("DATABASE_URL"))
+    
     db.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+        
     migrate = Migrate(app, db)    
     api = Api(app)
     
+
+
+
     #This has to be one time in  the app 
-    app.config["JWT_SECRET_KEY"] = "282709050867448692071479427955105377284"
+    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY") 
     jwt = JWTManager(app)
 
     @jwt.additional_claims_loader

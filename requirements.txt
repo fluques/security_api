@@ -9,5 +9,7 @@ flask-smorest
 marshmallow 
 flask-jwt-extended 
 passlib 
-flask-migrate 
+flask-migrate
 psycopg2
+sqlalchemy_utils
+python-dotenv

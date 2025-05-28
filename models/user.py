@@ -1,6 +1,7 @@
 from db import db
 from flask_login import UserMixin
-
+from sqlalchemy import event, insert, text
+from passlib.hash import pbkdf2_sha256
 
 class UserModel(db.Model, UserMixin):
     __tablename__="users"
@@ -13,7 +14,16 @@ class UserModel(db.Model, UserMixin):
     groups = db.relationship("GroupModel", back_populates="users", secondary="groups_users")
     companies = db.relationship("CompanyModel", back_populates="users", secondary="companies_users")
     permissions = db.relationship("PermissionModel", back_populates="users", secondary="users_permissions")
+    types = db.relationship("TypeModel", back_populates="users", secondary="users_types")
 
     def __repr__(self):
         return f'<User {self.username}>'
     
+stmt = insert(UserModel.__table__).values(id=1, usern_name="admin", email='ing.fernando@gmail.com', password='admin', is_active=True)
+
+@event.listens_for(UserModel.__table__, "after_create")
+def after_create(target, connection, **kw):
+    connection.execute(
+        text('INSERT INTO "public"."users" ("user_name", "email", "password", "is_active") VALUES (\'admin\', \'ing.fernando@gmail.com\', \''+ pbkdf2_sha256.hash("admin")+'\', True);')
+    )
+

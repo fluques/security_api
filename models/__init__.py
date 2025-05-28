@@ -11,3 +11,5 @@ from models.permission import PermissionModel
 from models.users_permissions import UsersPermissionsModel
 from models.groups_permissions import GroupsPermissionsModel
 from models.companysettings import CompanySettingsModel
+from models.type import TypeModel
+from models.users_types import UsersTypesModel

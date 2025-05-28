@@ -79,7 +79,7 @@ class ActionList(MethodView):
         try:   
             db.session.add(permission)
             db.session.commit()
-        except SQLAlchemyError:
+        except SQLAlchemyError as ex:
             abort(500,message="An error occurred while inserting the permission.")
 
         return permission

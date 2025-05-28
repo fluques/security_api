@@ -92,6 +92,9 @@ class ActionSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
 
+class TypeSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(required=True)
 
 class ResourceSchema(Schema):
     id = fields.Int(dump_only=True)
@@ -122,6 +125,12 @@ class PermissionsUpdateSchema(PlainPermissionsSchema):
     application = fields.Nested(ApplicationSchema)
 
 
+class TypesAndUsersSchema(Schema):
+    id = fields.Int(dump_only=True)
+    type = fields.Nested(TypeSchema)
+    user = fields.Nested(PlainUserSchema)
+
+
 class UsersAndPermissionsSchema(Schema):
     id = fields.Int(dump_only=True)
     permission = fields.Nested(PermissionsSchema)
@@ -138,7 +147,8 @@ class GroupsAndPermissionsSchema(Schema):
 class UserSchema(PlainUserSchema):
     groups = fields.List(fields.Nested(PlainGroupSchema()), dump_only=True)
     companies = fields.List(fields.Nested(PlainCompanySchema()), dump_only=True)
-    permissions = fields.List(fields.Nested(UsersAndPermissionsSchema()), dump_only=True)
+    permissions = fields.List(fields.Nested(PermissionsSchema()), dump_only=True)
+    types = fields.List(fields.Nested(TypeSchema()), dump_only=True)
 
 class GroupSchema(PlainGroupSchema):
     users = fields.List(fields.Nested(PlainUserSchema()), dump_only=True)
