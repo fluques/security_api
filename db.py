@@ -15,7 +15,7 @@ def check_if_database_exists(database_url):
 
         
 
-db=SQLAlchemy()
+db=SQLAlchemy(engine_options={"echo": True})
 
 
 

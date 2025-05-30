@@ -1,7 +1,7 @@
 from flask import Response
 from flask.views import MethodView, request
-from flask_smorest import Blueprint, abort
-from schemas import UserSchema, UserUpdateSchema,GroupSchema,UsersAndGroupsSchema, UsersAndPermissionsSchema
+from flask_smorest import abort, Blueprint
+from schemas import UserSchema, UserUpdateSchema,GroupSchema,UsersAndGroupsSchema, UsersAndPermissionsSchema,PaginationSchema
 from models import UserModel, GroupModel, PermissionModel
 from db import db
 from blocklist import BLOCKLIST
@@ -16,8 +16,12 @@ from flask_jwt_extended import (
     get_jwt,
     jwt_required,
 )
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
+from .odata_utils import apply_odata_query_with_pagination
 
 blp = Blueprint("Users", __name__, description="Operations on users")
+
 
 @blp.route("/login")
 class UserLogin(MethodView):
@@ -58,9 +62,10 @@ class User(MethodView):
     @jwt_required()
     def get(self, user_id):
         if not PermissionValidate().get("/user/<int:user_id>", "GET"):
-            abort(401,message=f'Authorization rejected for resource /user/<int:user_id>, action PUT')
-        
-        user = UserModel.query.get_or_404(user_id)
+            abort(401,message=f'Authorization rejected for resource /user/<int:user_id>, action GET')
+
+        user = UserModel.query.options(joinedload(UserModel.groups),joinedload(UserModel.types),
+                                       joinedload(UserModel.companies),joinedload(UserModel.permissions)).get_or_404(user_id)
         return user
 
     @jwt_required()
@@ -98,13 +103,22 @@ class User(MethodView):
 @blp.route("/user")
 class UserList(MethodView):
     @jwt_required()
+    @blp.paginate() 
     @blp.response(200, UserSchema(many=True))
-    def get(self):
+    def get(self,pagination_parameters):
+        """Get a list of users with pagination
+        """
+        request_args = request.args.to_dict()
 
         if not PermissionValidate().get("/user", "GET"):
             abort(401,message=f'Authorization rejected for resource /user, action GET')
 
-        return UserModel.query.all()
+        pagination_parameters.item_count = 100
+        order_by = request_args.get("$orderby", "")
+        filter = request_args.get("$filter", "")
+
+        orm_query = apply_odata_query_with_pagination((UserModel), filter, order_by, pagination_parameters)
+        return orm_query.options(joinedload(UserModel.groups),joinedload(UserModel.types),joinedload(UserModel.companies)).all()
 
     @jwt_required()
     @blp.arguments(UserSchema)

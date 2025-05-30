@@ -145,10 +145,10 @@ class GroupsAndPermissionsSchema(Schema):
 
 
 class UserSchema(PlainUserSchema):
-    groups = fields.List(fields.Nested(PlainGroupSchema()), dump_only=True)
-    companies = fields.List(fields.Nested(PlainCompanySchema()), dump_only=True)
+    groups = fields.List(fields.Nested(PlainGroupSchema(only=("id","name"))), dump_only=True)
+    companies = fields.List(fields.Nested(PlainCompanySchema(only=("id","name"))), dump_only=True)
     permissions = fields.List(fields.Nested(PermissionsSchema()), dump_only=True)
-    types = fields.List(fields.Nested(TypeSchema()), dump_only=True)
+    types = fields.List(fields.Nested(TypeSchema(only=("id","name"))), dump_only=True)
 
 class GroupSchema(PlainGroupSchema):
     users = fields.List(fields.Nested(PlainUserSchema()), dump_only=True)
@@ -181,3 +181,6 @@ class CompaniesAndUsersSchema(Schema):
     user = fields.Nested(UserSchema)
 
 
+class PaginationSchema(Schema):
+    page = fields.Int(required=True)
+    per_page = fields.Int(required=True)
