@@ -92,7 +92,7 @@ class ActionSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
 
-class TypeSchema(Schema):
+class UserTypeSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
 
@@ -112,23 +112,23 @@ class PlainPermissionsSchema(Schema):
 
 class PermissionsSchema(PlainPermissionsSchema):
     id = fields.Int(dump_only=True)
-    company = fields.Nested(PlainCompanySchema)
+    company = fields.Nested(PlainCompanySchema(only=("id","name")))
     resource = fields.Nested(ResourceSchema)
     action = fields.Nested(ActionSchema)
     application = fields.Nested(ApplicationSchema)
 
 class PermissionsUpdateSchema(PlainPermissionsSchema):
     id = fields.Int(dump_only=True)
-    company = fields.Nested(PlainCompanySchema)
+    company = fields.Nested(PlainCompanySchema(only=("id","name")))
     resource = fields.Nested(ResourceSchema)
     action = fields.Nested(ActionSchema)
     application = fields.Nested(ApplicationSchema)
 
 
-class TypesAndUsersSchema(Schema):
-    id = fields.Int(dump_only=True)
-    type = fields.Nested(TypeSchema)
-    user = fields.Nested(PlainUserSchema)
+#class TypesAndUsersSchema(Schema):
+#    id = fields.Int(dump_only=True)
+    #type = fields.Nested(TypeSchema)
+    #user = fields.Nested(PlainUserSchema)
 
 
 class UsersAndPermissionsSchema(Schema):
@@ -141,14 +141,22 @@ class UsersAndPermissionsSchema(Schema):
 class GroupsAndPermissionsSchema(Schema):
     id = fields.Int(dump_only=True)
     permission = fields.Nested(PermissionsSchema)
-    group = fields.Nested(PlainGroupSchema)
+    group = fields.Nested(PlainGroupSchema(only=("id","name")))
+
 
 
 class UserSchema(PlainUserSchema):
     groups = fields.List(fields.Nested(PlainGroupSchema(only=("id","name"))), dump_only=True)
     companies = fields.List(fields.Nested(PlainCompanySchema(only=("id","name"))), dump_only=True)
+    permissions = fields.List(fields.Nested(PermissionsSchema), dump_only=True)
+    types = fields.List(fields.Nested(UserTypeSchema(only=("id","name"))), dump_only=True)
+
+
+class UserDetailSchema(PlainUserSchema):
+    groups = fields.List(fields.Nested(PlainGroupSchema(only=("id","name"))), dump_only=True)
+    companies = fields.List(fields.Nested(PlainCompanySchema(only=("id","name"))), dump_only=True)
     permissions = fields.List(fields.Nested(PermissionsSchema()), dump_only=True)
-    types = fields.List(fields.Nested(TypeSchema(only=("id","name"))), dump_only=True)
+    types = fields.List(fields.Nested(UserTypeSchema(only=("id","name"))), dump_only=True)
 
 class GroupSchema(PlainGroupSchema):
     users = fields.List(fields.Nested(PlainUserSchema()), dump_only=True)

@@ -18,9 +18,13 @@ from resources.settings import blp as SettingsBlueprint
 
 from dotenv import load_dotenv
 
+from schemas import UserTypeSchema
 def create_app(db_url=None):
+    usertype =UserTypeSchema()
+    usertype.name = "Admin"
     
-
+    author_result = UserTypeSchema().dump(usertype)
+    print(author_result)
     app=Flask(__name__)
     load_dotenv()
     app.config["PROPAGATE_EXCEPTIONS"] = True
@@ -31,8 +35,8 @@ def create_app(db_url=None):
     app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
     app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL") 
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config['SQLALCHEMY_RECORD_QUERIES'] = True
+    #app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    #app.config['SQLALCHEMY_RECORD_QUERIES'] = True
 
     check_if_database_exists(os.getenv("DATABASE_URL"))
     
@@ -117,7 +121,7 @@ def create_app(db_url=None):
 
     @app.get("/")
     def HelloName():
-        return "Hello World 2!"
+        return "Welcome to the API"
 
     api.register_blueprint(UserBlueprint)
     api.register_blueprint(GroupBlueprint)

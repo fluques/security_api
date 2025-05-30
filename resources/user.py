@@ -1,7 +1,7 @@
 from flask import Response
 from flask.views import MethodView, request
 from flask_smorest import abort, Blueprint
-from schemas import UserSchema, UserUpdateSchema,GroupSchema,UsersAndGroupsSchema, UsersAndPermissionsSchema,PaginationSchema
+from schemas import UserSchema, UserUpdateSchema,UserDetailSchema, GroupSchema,UsersAndGroupsSchema, UsersAndPermissionsSchema,PaginationSchema
 from models import UserModel, GroupModel, PermissionModel
 from db import db
 from blocklist import BLOCKLIST
@@ -58,7 +58,7 @@ class UserLogout(MethodView):
 
 @blp.route("/user/<int:user_id>")
 class User(MethodView):
-    @blp.response(200, UserSchema)
+    @blp.response(200, UserDetailSchema)
     @jwt_required()
     def get(self, user_id):
         if not PermissionValidate().get("/user/<int:user_id>", "GET"):
@@ -80,7 +80,7 @@ class User(MethodView):
 
     @jwt_required()
     @blp.arguments(UserUpdateSchema)
-    @blp.response(200, UserSchema)
+    @blp.response(200, UserDetailSchema)
     def put(self, user_data, user_id):
         if not PermissionValidate().get("/user/<int:user_id>", "PUT"):
             abort(401,message=f'Authorization rejected for resource /user/<int:user_id>, action PUT')

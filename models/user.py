@@ -16,6 +16,12 @@ class UserModel(db.Model, UserMixin):
     permissions = db.relationship("PermissionModel", back_populates="users", secondary="users_permissions", lazy='noload')
     types = db.relationship("TypeModel", back_populates="users", secondary="users_types", lazy='noload')
 
+    def __init__(self, user_name, email, password, is_active=True):
+        self.user_name = user_name
+        self.email = email
+        self.password = pbkdf2_sha256.hash(password)
+        self.is_active = is_active
+
     def __repr__(self):
         return f'<User {self.username}>'
     
