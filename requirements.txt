@@ -1,0 +1,17 @@
+sqlalchemy
+requests 
+flask 
+python-dotenv 
+flask-login
+flask-sqlalchemy
+flask-bcrypt 
+flask-smorest 
+marshmallow 
+flask-jwt-extended 
+passlib 
+flask-migrate
+psycopg2
+sqlalchemy_utils
+python-dotenv
+odata-query
+pytest
